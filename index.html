@@ -148,51 +148,51 @@
 
   </main>
 
-  <!-- PLANTILLA ULTRA-COMPACTA PARA FORZAR 1 SOLA HOJA PERFECTA -->
+  <!-- PLANTILLA PDF OPTIMIZADA PARA CABER PERFECTAMENTE EN UNA SOLA PÁGINA -->
   <div style="position: absolute; left: -9999px; top: -9999px;">
-    <div id="pdf-template" style="width: 650px; background: #ffffff; color: #1f2937; padding: 16px 20px; font-family: Arial, sans-serif; box-sizing: border-box;">
+    <div id="pdf-template" style="width: 560px; background: #ffffff; color: #1f2937; padding: 12px 16px; font-family: Arial, sans-serif; box-sizing: border-box;">
       
       <!-- ENCABEZADO -->
-      <div style="border-bottom: 2px solid #059669; padding-bottom: 6px; margin-bottom: 10px;">
-        <h1 style="color: #047857; font-size: 16px; font-weight: bold; margin: 0;">Informe Clínico de Evaluación</h1>
-        <p style="color: #4b5563; font-size: 10px; margin: 2px 0 0 0;">Equivalencia de Estímulos - Aves Endémicas y Amenazadas de Colombia</p>
+      <div style="border-bottom: 2px solid #059669; padding-bottom: 4px; margin-bottom: 8px;">
+        <h1 style="color: #047857; font-size: 15px; font-weight: bold; margin: 0;">Informe Clínico de Evaluación</h1>
+        <p style="color: #4b5563; font-size: 9px; margin: 1px 0 0 0;">Equivalencia de Estímulos - Aves Endémicas y Amenazadas de Colombia</p>
       </div>
 
       <!-- DATOS -->
-      <div style="background-color: #f3f4f6; border-radius: 4px; padding: 8px 12px; margin-bottom: 10px; border: 1px solid #e5e7eb;">
-        <h2 style="font-size: 9px; text-transform: uppercase; color: #374151; margin: 0 0 4px 0; border-bottom: 1px solid #d1d5db; padding-bottom: 2px; font-weight: bold;">DATOS DEL REGISTRO</h2>
-        <p style="margin: 2px 0; font-size: 10px;"><strong>Fecha y Hora:</strong> <span id="pdf-date"></span></p>
-        <p style="margin: 2px 0; font-size: 10px;"><strong>Paciente / Identificador:</strong> <span id="pdf-patient"></span></p>
-        <p style="margin: 2px 0; font-size: 10px;"><strong>Evaluador/a:</strong> Victoria Pabón Martínez — Psicología Clínica</p>
+      <div style="background-color: #f3f4f6; border-radius: 4px; padding: 6px 10px; margin-bottom: 8px; border: 1px solid #e5e7eb;">
+        <h2 style="font-size: 8px; text-transform: uppercase; color: #374151; margin: 0 0 3px 0; border-bottom: 1px solid #d1d5db; padding-bottom: 2px; font-weight: bold;">DATOS DEL REGISTRO</h2>
+        <p style="margin: 1px 0; font-size: 9px;"><strong>Fecha y Hora:</strong> <span id="pdf-date"></span></p>
+        <p style="margin: 1px 0; font-size: 9px;"><strong>Paciente / Identificador:</strong> <span id="pdf-patient"></span></p>
+        <p style="margin: 1px 0; font-size: 9px;"><strong>Evaluador/a:</strong> Victoria Pabón Martínez — Psicología Clínica</p>
       </div>
 
       <!-- PORCENTAJE -->
-      <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 4px; padding: 8px; text-align: center; margin-bottom: 10px;">
-        <p style="font-size: 9px; text-transform: uppercase; color: #047857; font-weight: bold; margin: 0;">PORCENTAJE GENERAL DE ACIERTOS EN FASE DE PRUEBA</p>
-        <p style="font-size: 22px; font-weight: bold; color: #059669; margin: 2px 0 0 0;" id="pdf-score">0%</p>
+      <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 4px; padding: 6px; text-align: center; margin-bottom: 8px;">
+        <p style="font-size: 8px; text-transform: uppercase; color: #047857; font-weight: bold; margin: 0;">PORCENTAJE GENERAL DE ACIERTOS EN FASE DE PRUEBA</p>
+        <p style="font-size: 18px; font-weight: bold; color: #059669; margin: 2px 0 0 0;" id="pdf-score">0%</p>
       </div>
 
       <!-- TABLA RESULTADOS -->
-      <h2 style="font-size: 9px; text-transform: uppercase; color: #374151; margin: 0 0 4px 0; font-weight: bold;">DESGLOSE POR PROPIEDAD EVALUADA</h2>
-      <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 10px;">
+      <h2 style="font-size: 8px; text-transform: uppercase; color: #374151; margin: 0 0 3px 0; font-weight: bold;">DESGLOSE POR PROPIEDAD EVALUADA</h2>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 9px;">
         <thead>
           <tr style="background-color: #e5e7eb; color: #374151; text-align: left;">
-            <th style="padding: 4px 8px; border: 1px solid #d1d5db;">Propiedad Evaluada</th>
-            <th style="padding: 4px 8px; border: 1px solid #d1d5db; text-align: center;">Ensayos Correctos</th>
-            <th style="padding: 4px 8px; border: 1px solid #d1d5db; text-align: center;">Resultado</th>
+            <th style="padding: 3px 6px; border: 1px solid #d1d5db;">Propiedad Evaluada</th>
+            <th style="padding: 3px 6px; border: 1px solid #d1d5db; text-align: center;">Ensayos Correctos</th>
+            <th style="padding: 3px 6px; border: 1px solid #d1d5db; text-align: center;">Resultado</th>
           </tr>
         </thead>
         <tbody id="pdf-table-body"></tbody>
       </table>
 
       <!-- OBSERVACIONES -->
-      <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 4px; padding: 8px 12px; margin-bottom: 10px;">
-        <h2 style="font-size: 9px; text-transform: uppercase; color: #374151; margin: 0 0 2px 0; font-weight: bold;">OBSERVACIONES CLÍNICAS</h2>
-        <p id="pdf-notes" style="font-size: 10px; color: #4b5563; margin: 0; white-space: pre-wrap;"></p>
+      <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 4px; padding: 6px 10px; margin-bottom: 6px;">
+        <h2 style="font-size: 8px; text-transform: uppercase; color: #374151; margin: 0 0 2px 0; font-weight: bold;">OBSERVACIONES CLÍNICAS</h2>
+        <p id="pdf-notes" style="font-size: 9px; color: #4b5563; margin: 0; white-space: pre-wrap;"></p>
       </div>
 
       <!-- PIE -->
-      <div style="border-top: 1px solid #e5e7eb; padding-top: 6px; text-align: center; font-size: 8px; color: #9ca3af; margin-top: 10px;">
+      <div style="border-top: 1px solid #e5e7eb; padding-top: 4px; text-align: center; font-size: 7px; color: #9ca3af; margin-top: 6px;">
         Documento generado automáticamente para el control y seguimiento de desempeño del paciente. Todos los derechos reservados.
       </div>
     </div>
@@ -534,9 +534,9 @@
         const row = document.createElement("tr");
         row.style.borderBottom = "1px solid #e5e7eb";
         row.innerHTML = `
-          <td style="padding: 4px 8px; border: 1px solid #d1d5db; font-weight: bold;">${prop}</td>
-          <td style="padding: 4px 8px; border: 1px solid #d1d5db; text-align: center;">${propCorrect} / ${propTotal}</td>
-          <td style="padding: 4px 8px; border: 1px solid #d1d5db; text-align: center; color: ${passed ? '#047857' : '#b91c1c'}; font-weight: bold;">
+          <td style="padding: 3px 6px; border: 1px solid #d1d5db; font-weight: bold;">${prop}</td>
+          <td style="padding: 3px 6px; border: 1px solid #d1d5db; text-align: center;">${propCorrect} / ${propTotal}</td>
+          <td style="padding: 3px 6px; border: 1px solid #d1d5db; text-align: center; color: ${passed ? '#047857' : '#b91c1c'}; font-weight: bold;">
             ${passed ? 'Demostrada' : 'No demostrada'}
           </td>
         `;
@@ -547,10 +547,10 @@
 
       const safePatientName = patientId.replace(/[^a-z0-9]/gi, '_').toLowerCase();
       const opt = {
-        margin:       0,
+        margin:       2,
         filename:     `Informe_Equivalencia_${safePatientName}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, scrollX: 0, scrollY: 0 },
+        html2canvas:  { scale: 1.5, useCORS: true, scrollX: 0, scrollY: 0 },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak:    { mode: 'avoid-all' }
       };
