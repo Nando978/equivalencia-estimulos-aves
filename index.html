@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juego de Equivalencia de Estímulos - Aves de Colombia</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- LIBRERÍA PARA GENERAR PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
+  <style>
+    .stimulus-card {
+      transition: all 0.2s ease-in-out;
+    }
+    .stimulus-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-4 bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-200">
+
+  <!-- BOTONES SUPERIORES (INICIO Y MODO OSCURO) -->
+  <div class="w-full max-w-3xl flex justify-end gap-2 mb-2">
+    <button onclick="confirmGoHome()" class="px-3 py-2 text-xs font-semibold rounded-lg bg-white dark:bg-gray-800 shadow border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-1">
+      <span>🏠</span> <span>Inicio</span>
+    </button>
+    <button onclick="toggleDarkMode()" class="px-3 py-2 text-xs font-semibold rounded-lg bg-white dark:bg-gray-800 shadow border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-1">
+      <span id="theme-icon">🌙</span> <span id="theme-text">Modo Oscuro</span>
+    </button>
+  </div>
+
+  <header class="w-full max-w-3xl mb-4 text-center">
+    <h1 class="text-3xl font-bold text-emerald-700 dark:text-emerald-400">Equivalencia de Estímulos</h1>
+    <p class="text-sm text-gray-600 dark:text-gray-400">Aves Endémicas y Amenazadas de Colombia</p>
+  </header>
+
+  <main id="game-container" class="w-full max-w-3xl bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 relative transition-colors duration-200 my-auto">
+    
+    <!-- PANTALLA DE INICIO -->
+    <section id="screen-start" class="text-center py-4">
+      
+      <!-- COLLAGE DE BIENVENIDA -->
+      <div class="grid grid-cols-3 gap-3 mb-6 max-w-lg mx-auto">
+        <div class="relative overflow-hidden rounded-lg shadow-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 h-28 flex items-center justify-center p-1">
+          <img src="https://i.ibb.co/4R0bnpf1/chivito1.jpg" alt="Chivito de Santa Marta" class="max-h-full max-w-full object-contain rounded">
+          <span class="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] py-0.5 truncate px-1 font-medium">Chivito</span>
+        </div>
+        <div class="relative overflow-hidden rounded-lg shadow-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 h-28 flex items-center justify-center p-1">
+          <img src="https://i.ibb.co/nMCJ8Q8m/cotorra1.jpg" alt="Cotorra Coroniazul" class="max-h-full max-w-full object-contain rounded">
+          <span class="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] py-0.5 truncate px-1 font-medium">Cotorra</span>
+        </div>
+        <div class="relative overflow-hidden rounded-lg shadow-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 h-28 flex items-center justify-center p-1">
+          <img src="https://i.ibb.co/ccDkN2Dc/paisa1.jpg" alt="Montañerito Paisa" class="max-h-full max-w-full object-contain rounded">
+          <span class="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] py-0.5 truncate px-1 font-medium">Montañerito</span>
+        </div>
+      </div>
+
+      <h2 class="text-2xl font-bold mb-3">¡Bienvenido al Juego de Discriminación!</h2>
+      <p class="text-gray-600 dark:text-gray-300 mb-6 max-w-lg mx-auto text-base leading-relaxed">
+        El juego consta de una <strong>Fase de Entrenamiento</strong> (con 4 ensayos por relación y retroalimentación inmediata) y una <strong>Fase de Prueba</strong> final (sin mensajes) para evaluar las propiedades de equivalencia de estímulos.
+      </p>
+      <button onclick="startGame()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-8 rounded-lg shadow-md transition duration-200">
+        Iniciar Juego
+      </button>
+    </section>
+
+    <!-- PANTALLA DE JUEGO -->
+    <section id="screen-play" class="hidden">
+      <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-4 mb-6">
+        <div>
+          <span id="phase-badge" class="px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+            Fase 1: Entrenamiento
+          </span>
+          <span id="trial-counter" class="text-xs text-gray-500 dark:text-gray-400 ml-2">
+            Ensayo 1 / 24
+          </span>
+        </div>
+        <div id="trial-type-badge" class="text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+          Relación A-B
+        </div>
+      </div>
+
+      <!-- MUESTRA -->
+      <div class="mb-8 text-center">
+        <p id="sample-label" class="text-xs uppercase tracking-wider text-gray-400 font-bold mb-2">Muestra (Estímulo de Origen)</p>
+        <div id="sample-container" class="inline-block p-4 border-2 border-emerald-500 rounded-lg bg-emerald-50/50 dark:bg-emerald-950/30"></div>
+      </div>
+
+      <!-- COMPARADORES -->
+      <div>
+        <p class="text-xs uppercase tracking-wider text-gray-400 font-bold text-center mb-4">Selecciona la opción correspondiente</p>
+        <div id="comparators-container" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+      </div>
+    </section>
+
+    <!-- RESUMEN FINAL -->
+    <section id="screen-summary" class="hidden text-center py-6">
+      <h2 class="text-2xl font-bold mb-2">Resumen de Resultados</h2>
+      <p class="text-gray-600 dark:text-gray-300 mb-6">Evaluación de las propiedades de equivalencia de estímulos</p>
+
+      <div class="bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-6 max-w-md mx-auto">
+        <div class="text-4xl font-extrabold text-emerald-600 dark:text-emerald-400 mb-1" id="final-score">0%</div>
+        <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Porcentaje General de Aciertos en Prueba</p>
+      </div>
+
+      <!-- DATOS DEL PACIENTE Y BOTÓN DE PDF -->
+      <div class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 mb-6 max-w-md mx-auto text-left shadow-sm">
+        <h3 class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-3 text-center">Información del Paciente para el Informe</h3>
+        
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Nombre o Código del Paciente</label>
+            <input type="text" id="patient-id" placeholder="Ej. PAC-2026-001 / Juan Pérez" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Notas / Observaciones Clínicas (Opcional)</label>
+            <textarea id="patient-notes" rows="2" placeholder="Observaciones sobre el desempeño..." class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+          </div>
+        </div>
+
+        <button onclick="downloadPDFReport()" class="w-full mt-4 bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 px-4 rounded-lg shadow flex items-center justify-center gap-2 transition duration-200">
+          <span>📄</span> <span>Descargar Informe en PDF</span>
+        </button>
+      </div>
+
+      <div class="overflow-x-auto mb-6">
+        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
+          <thead class="text-xs uppercase bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+            <tr>
+              <th scope="col" class="px-4 py-3">Propiedad Evaluada</th>
+              <th scope="col" class="px-4 py-3 text-center">Ensayos Correctos</th>
+              <th scope="col" class="px-4 py-3 text-center">Resultado</th>
+            </tr>
+          </thead>
+          <tbody id="results-table-body"></tbody>
+        </table>
+      </div>
+
+      <button onclick="startGame()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition duration-200">
+        Reintentar Juego
+      </button>
+    </section>
+
+  </main>
+
+  <!-- PLANTILLA INVISIBLE PARA GENERAR EL PDF -->
+  <div id="pdf-template" class="hidden">
+    <div style="font-family: Arial, sans-serif; padding: 25px; color: #1f2937; max-width: 700px; margin: 0 auto; line-height: 1.5;">
+      <div style="border-bottom: 2px solid #059669; padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+          <h1 style="color: #047857; font-size: 22px; font-weight: bold; margin: 0;">Informe Clínico de Evaluación</h1>
+          <p style="color: #4b5563; font-size: 13px; margin: 2px 0 0 0;">Equivalencia de Estímulos - Aves Endémicas y Amenazadas de Colombia</p>
+        </div>
+      </div>
+
+      <div style="background-color: #f3f4f6; border-radius: 8px; padding: 15px; margin-bottom: 20px; border: 1px solid #e5e7eb;">
+        <h2 style="font-size: 14px; text-transform: uppercase; color: #374151; margin: 0 0 10px 0; border-bottom: 1px solid #d1d5db; padding-bottom: 4px;">Datos del Registro</h2>
+        <p style="margin: 4px 0; font-size: 13px;"><strong>Fecha y Hora:</strong> <span id="pdf-date"></span></p>
+        <p style="margin: 4px 0; font-size: 13px;"><strong>Paciente / Identificador:</strong> <span id="pdf-patient"></span></p>
+        <p style="margin: 4px 0; font-size: 13px;"><strong>Evaluador/a:</strong> Victoria Pabón Martínez — Psicología Clínica</p>
+      </div>
+
+      <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 15px; text-align: center; margin-bottom: 20px;">
+        <p style="font-size: 12px; text-transform: uppercase; color: #047857; font-weight: bold; margin: 0;">Porcentaje General de Aciertos en Fase de Prueba</p>
+        <p style="font-size: 36px; font-weight: bold; color: #059669; margin: 5px 0 0 0;" id="pdf-score">0%</p>
+      </div>
+
+      <h2 style="font-size: 14px; text-transform: uppercase; color: #374151; margin: 0 0 10px 0;">Desglose por Propiedad Evaluada</h2>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px;">
+        <thead>
+          <tr style="background-color: #e5e7eb; color: #374151; text-align: left;">
+            <th style="padding: 8px 12px; border: 1px solid #d1d5db;">Propiedad Evaluada</th>
+            <th style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center;">Ensayos Correctos</th>
+            <th style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center;">Resultado</th>
+          </tr>
+        </thead>
+        <tbody id="pdf-table-body"></tbody>
+      </table>
+
+      <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; margin-bottom: 25px;">
+        <h2 style="font-size: 13px; text-transform: uppercase; color: #374151; margin: 0 0 6px 0;">Observaciones Clínicas</h2>
+        <p id="pdf-notes" style="font-size: 13px; color: #4b5563; margin: 0; white-space: pre-wrap;"></p>
+      </div>
+
+      <div style="border-top: 1px solid #e5e7eb; pt-10px; text-align: center; font-size: 11px; color: #9ca3af; margin-top: 30px;">
+        Documento generado automáticamente para el control y seguimiento de desempeño del paciente.
+      </div>
+    </div>
+  </div>
+
+  <!-- PIE DE PÁGINA (DERECHOS RESERVADOS Y CRÉDITOS) -->
+  <footer class="w-full max-w-3xl mt-6 text-center text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-800 pt-4">
+    <p>© Todos los derechos reservados.</p>
+    <p class="font-medium mt-1 text-gray-700 dark:text-gray-300">Elaborado por Victoria Pabón Martínez — Psicología Clínica</p>
+  </footer>
+
+  <!-- MODAL DE FEEDBACK (ENTRENAMIENTO) -->
+  <div id="feedback-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-sm w-full mx-4 text-center shadow-2xl border border-gray-200 dark:border-gray-700">
+      <div id="feedback-icon" class="text-5xl mb-3"></div>
+      <h3 id="feedback-title" class="text-xl font-bold mb-2"></h3>
+      <p id="feedback-message" class="text-gray-600 dark:text-gray-300 mb-6 text-sm"></p>
+      <button id="feedback-btn" onclick="closeFeedback()" class="w-full py-2 px-4 rounded-lg font-semibold text-white transition">
+        Siguiente
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const STIMULI = {
+      1: {
+        id: 1,
+        name: "Chivito de Santa Marta",
+        scientific: "Oxypogon cyanolaemus",
+        images: [
+          "https://i.ibb.co/4R0bnpf1/chivito1.jpg",
+          "https://i.ibb.co/prQmDcMc/chivito2.jpg",
+          "https://i.ibb.co/3ykQgT5P/chivito3.jpg",
+          "https://i.ibb.co/SDwyB634/chivito4.jpg",
+          "https://i.ibb.co/7ty2WgKf/chivito5.jpg"
+        ]
+      },
+      2: {
+        id: 2,
+        name: "Cotorra coroniazul",
+        scientific: "Hapalopsittaca fuertesi",
+        images: [
+          "https://i.ibb.co/nMCJ8Q8m/cotorra1.jpg",
+          "https://i.ibb.co/qLvTRqy1/cotorra2.jpg",
+          "https://i.ibb.co/6R0pWBbs/cotorra3.jpg",
+          "https://i.ibb.co/mCVkGwrq/cotorra4.jpg",
+          "https://i.ibb.co/21LSqtvJ/cotorra5.jpg"
+        ]
+      },
+      3: {
+        id: 3,
+        name: "Montañerito Paisa",
+        scientific: "Atlapetes blancae",
+        images: [
+          "https://i.ibb.co/ccDkN2Dc/paisa1.jpg",
+          "https://i.ibb.co/1yhqwJb/paisa2.jpg",
+          "https://i.ibb.co/gbvfBcP5/paisa3.jpg",
+          "https://i.ibb.co/C3Nc6Mrz/paisa4.jpg",
+          "https://i.ibb.co/M5MtbQF8/paisa5.jpg"
+        ]
+      }
+    };
+
+    let currentPhase = "training";
+    let currentTrialIndex = 0;
+    let trials = [];
+    let testResults = [];
+    let pendingCallback = null;
+
+    function toggleDarkMode() {
+      const html = document.documentElement;
+      const icon = document.getElementById("theme-icon");
+      const text = document.getElementById("theme-text");
+      
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        icon.textContent = "🌙";
+        text.textContent = "Modo Oscuro";
+      } else {
+        html.classList.add('dark');
+        icon.textContent = "☀️";
+        text.textContent = "Modo Claro";
+      }
+    }
+
+    function confirmGoHome() {
+      const screenPlay = document.getElementById("screen-play");
+      if (!screenPlay.classList.contains("hidden")) {
+        if (confirm("¿Estás seguro de que deseas volver al inicio? Se perderá el progreso del juego actual.")) {
+          goHome();
+        }
+      } else {
+        goHome();
+      }
+    }
+
+    function goHome() {
+      document.getElementById("screen-play").classList.add("hidden");
+      document.getElementById("screen-summary").classList.add("hidden");
+      document.getElementById("screen-start").classList.remove("hidden");
+    }
+
+    function generateTrainingTrials() {
+      let t = [];
+      for (let birdId = 1; birdId <= 3; birdId++) {
+        for (let i = 0; i < 4; i++) {
+          t.push({ phase: 'training', type: 'A-B', sampleType: 'image', targetType: 'name', birdId: birdId });
+        }
+        for (let i = 0; i < 4; i++) {
+          t.push({ phase: 'training', type: 'B-C', sampleType: 'name', targetType: 'scientific', birdId: birdId });
+        }
+      }
+      return shuffleArray(t);
+    }
+
+    function generateTestingTrials() {
+      let t = [];
+      for (let b = 1; b <= 3; b++) {
+        const refTypes = [
+          { sample: 'image', target: 'image', desc: 'A-A' },
+          { sample: 'name', target: 'name', desc: 'B-B' },
+          { sample: 'scientific', target: 'scientific', desc: 'C-C' }
+        ];
+        let chosenRef = refTypes[b - 1];
+        t.push({ phase: 'testing', property: 'Reflexividad', type: chosenRef.desc, sampleType: chosenRef.sample, targetType: chosenRef.target, birdId: b });
+
+        const symTypes = [
+          { sample: 'name', target: 'image', desc: 'B-A' },
+          { sample: 'scientific', target: 'name', desc: 'C-B' },
+          { sample: 'name', target: 'image', desc: 'B-A' }
+        ];
+        let chosenSym = symTypes[b - 1];
+        t.push({ phase: 'testing', property: 'Simetría', type: chosenSym.desc, sampleType: chosenSym.sample, targetType: chosenSym.target, birdId: b });
+
+        const transTypes = [
+          { sample: 'image', target: 'scientific', desc: 'A-C' },
+          { sample: 'scientific', target: 'image', desc: 'C-A' },
+          { sample: 'image', target: 'scientific', desc: 'A-C' }
+        ];
+        let chosenTrans = transTypes[b - 1];
+        t.push({ phase: 'testing', property: 'Transitividad', type: chosenTrans.desc, sampleType: chosenTrans.sample, targetType: chosenTrans.target, birdId: b });
+      }
+      return shuffleArray(t);
+    }
+
+    function startGame() {
+      currentPhase = "training";
+      currentTrialIndex = 0;
+      testResults = [];
+      trials = generateTrainingTrials();
+
+      document.getElementById("screen-start").classList.add("hidden");
+      document.getElementById("screen-summary").classList.add("hidden");
+      document.getElementById("screen-play").classList.remove("hidden");
+
+      renderTrial();
+    }
+
+    function renderTrial() {
+      const trial = trials[currentTrialIndex];
+
+      const phaseBadge = document.getElementById("phase-badge");
+      const trialCounter = document.getElementById("trial-counter");
+      const trialTypeBadge = document.getElementById("trial-type-badge");
+
+      if (currentPhase === "training") {
+        phaseBadge.className = "px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+        phaseBadge.textContent = "Fase 1: Entrenamiento";
+      } else {
+        phaseBadge.className = "px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
+        phaseBadge.textContent = "Fase 2: Prueba (Sin Retroalimentación)";
+      }
+
+      trialCounter.textContent = `Ensayo ${currentTrialIndex + 1} / ${trials.length}`;
+      trialTypeBadge.textContent = `Relación: ${trial.type}`;
+
+      const sampleContainer = document.getElementById("sample-container");
+      sampleContainer.innerHTML = "";
+      const targetBird = STIMULI[trial.birdId];
+
+      if (trial.sampleType === 'image') {
+        const randomImg = targetBird.images[Math.floor(Math.random() * targetBird.images.length)];
+        sampleContainer.innerHTML = `<img src="${randomImg}" alt="${targetBird.name}" class="h-40 w-40 object-contain rounded-md shadow bg-white dark:bg-gray-900 p-1">`;
+      } else if (trial.sampleType === 'name') {
+        sampleContainer.innerHTML = `<span class="text-xl font-bold px-6 py-2 block">${targetBird.name}</span>`;
+      } else if (trial.sampleType === 'scientific') {
+        sampleContainer.innerHTML = `<span class="text-xl italic font-serif text-emerald-700 dark:text-emerald-400 px-6 py-2 block">${targetBird.scientific}</span>`;
+      }
+
+      const comparatorsContainer = document.getElementById("comparators-container");
+      comparatorsContainer.innerHTML = "";
+
+      let options = [1, 2, 3];
+      options = shuffleArray(options);
+
+      options.forEach(birdId => {
+        const bird = STIMULI[birdId];
+        const btn = document.createElement("button");
+        btn.className = "stimulus-card bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-lg p-4 text-center cursor-pointer hover:border-emerald-500 focus:outline-none";
+        
+        if (trial.targetType === 'image') {
+          const imgUrl = bird.images[Math.floor(Math.random() * bird.images.length)];
+          btn.innerHTML = `<div class="h-32 w-full flex items-center justify-center bg-gray-50 dark:bg-gray-800 rounded mb-2 overflow-hidden"><img src="${imgUrl}" alt="Opción" class="max-h-full max-w-full object-contain"></div>`;
+        } else if (trial.targetType === 'name') {
+          btn.innerHTML = `<span class="font-semibold block py-4">${bird.name}</span>`;
+        } else if (trial.targetType === 'scientific') {
+          btn.innerHTML = `<span class="italic font-serif text-emerald-600 dark:text-emerald-300 block py-4">${bird.scientific}</span>`;
+        }
+
+        btn.onclick = () => handleChoice(birdId, trial.birdId);
+        comparatorsContainer.appendChild(btn);
+      });
+    }
+
+    function handleChoice(selectedId, correctId) {
+      const isCorrect = (selectedId === correctId);
+
+      if (currentPhase === "training") {
+        if (isCorrect) {
+          showFeedback(true, "¡Muy bien, lo hiciste!", "Has seleccionado la opción correcta.", () => advanceTrial());
+        } else {
+          showFeedback(false, "Te equivocaste", "Intenta de nuevo en el siguiente ensayo.", () => advanceTrial());
+        }
+      } else {
+        testResults.push({
+          property: trials[currentTrialIndex].property,
+          correct: isCorrect
+        });
+        advanceTrial();
+      }
+    }
+
+    function advanceTrial() {
+      currentTrialIndex++;
+      if (currentTrialIndex < trials.length) {
+        renderTrial();
+      } else {
+        if (currentPhase === "training") {
+          currentPhase = "testing";
+          currentTrialIndex = 0;
+          trials = generateTestingTrials();
+          renderTrial();
+        } else {
+          showSummary();
+        }
+      }
+    }
+
+    function showFeedback(isSuccess, title, message, callback) {
+      pendingCallback = callback;
+      const modal = document.getElementById("feedback-modal");
+      const icon = document.getElementById("feedback-icon");
+      const titleEl = document.getElementById("feedback-title");
+      const msgEl = document.getElementById("feedback-message");
+      const btn = document.getElementById("feedback-btn");
+
+      if (isSuccess) {
+        icon.textContent = "🌟";
+        titleEl.textContent = title;
+        titleEl.className = "text-xl font-bold text-emerald-600 mb-2";
+        msgEl.textContent = message;
+        btn.className = "w-full py-2 px-4 rounded-lg font-semibold text-white bg-emerald-600 hover:bg-emerald-700";
+      } else {
+        icon.textContent = "💡";
+        titleEl.textContent = title;
+        titleEl.className = "text-xl font-bold text-amber-600 mb-2";
+        msgEl.textContent = message;
+        btn.className = "w-full py-2 px-4 rounded-lg font-semibold text-white bg-amber-600 hover:bg-amber-700";
+      }
+
+      modal.classList.remove("hidden");
+    }
+
+    function closeFeedback() {
+      document.getElementById("feedback-modal").classList.add("hidden");
+      if (pendingCallback) pendingCallback();
+    }
+
+    function showSummary() {
+      document.getElementById("screen-play").classList.add("hidden");
+      document.getElementById("screen-summary").classList.remove("hidden");
+
+      const totalTest = testResults.length;
+      const correctTest = testResults.filter(r => r.correct).length;
+      const percentage = Math.round((correctTest / totalTest) * 100);
+
+      document.getElementById("final-score").textContent = `${percentage}%`;
+
+      const properties = ['Reflexividad', 'Simetría', 'Transitividad'];
+      const tbody = document.getElementById("results-table-body");
+      tbody.innerHTML = "";
+
+      properties.forEach(prop => {
+        const propResults = testResults.filter(r => r.property === prop);
+        const propCorrect = propResults.filter(r => r.correct).length;
+        const propTotal = propResults.length;
+        const passed = propCorrect === propTotal;
+
+        const row = document.createElement("tr");
+        row.className = "border-b border-gray-200 dark:border-gray-700";
+        row.innerHTML = `
+          <td class="px-4 py-3 font-medium">${prop}</td>
+          <td class="px-4 py-3 text-center">${propCorrect} / ${propTotal}</td>
+          <td class="px-4 py-3 text-center">
+            <span class="px-2 py-1 text-xs font-semibold rounded-full ${passed ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}">
+              ${passed ? 'Demostrada' : 'No demostrada'}
+            </span>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function downloadPDFReport() {
+      const patientId = document.getElementById("patient-id").value.trim() || "Anónimo";
+      const patientNotes = document.getElementById("patient-notes").value.trim() || "Sin observaciones adicionales.";
+      const date = new Date().toLocaleString("es-CO");
+
+      const totalTest = testResults.length;
+      const correctTest = testResults.filter(r => r.correct).length;
+      const percentage = Math.round((correctTest / totalTest) * 100);
+
+      // Llenar datos de la plantilla PDF
+      document.getElementById("pdf-date").textContent = date;
+      document.getElementById("pdf-patient").textContent = patientId;
+      document.getElementById("pdf-score").textContent = `${percentage}%`;
+      document.getElementById("pdf-notes").textContent = patientNotes;
+
+      const properties = ['Reflexividad', 'Simetría', 'Transitividad'];
+      const pdfTbody = document.getElementById("pdf-table-body");
+      pdfTbody.innerHTML = "";
+
+      properties.forEach(prop => {
+        const propResults = testResults.filter(r => r.property === prop);
+        const propCorrect = propResults.filter(r => r.correct).length;
+        const propTotal = propResults.length;
+        const passed = propCorrect === propTotal;
+
+        const row = document.createElement("tr");
+        row.style.borderBottom = "1px solid #e5e7eb";
+        row.innerHTML = `
+          <td style="padding: 8px 12px; border: 1px solid #d1d5db; font-weight: 500;">${prop}</td>
+          <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center;">${propCorrect} / ${propTotal}</td>
+          <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center; color: ${passed ? '#047857' : '#b91c1c'}; font-weight: bold;">
+            ${passed ? 'Demostrada' : 'No demostrada'}
+          </td>
+        `;
+        pdfTbody.appendChild(row);
+      });
+
+      // Generar PDF usando html2pdf
+      const element = document.getElementById("pdf-template");
+      element.classList.remove("hidden");
+
+      const safePatientName = patientId.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      const opt = {
+        margin:       10,
+        filename:     `Informe_Equivalencia_${safePatientName}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(element).save().then(() => {
+        element.classList.add("hidden");
+      });
+    }
+
+    function shuffleArray(array) {
+      let arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+  </script>
+</body>
+</html>
