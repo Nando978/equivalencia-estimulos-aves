@@ -62,7 +62,7 @@
 
       <h2 class="text-2xl font-bold mb-3">¡Bienvenido al Juego de Discriminación!</h2>
       <p class="text-gray-600 dark:text-gray-300 mb-6 max-w-lg mx-auto text-base leading-relaxed">
-        El juego consta de una <strong>Fase de Entrenamiento</strong> (con 4 ensayos por relación y retroalimentación inmediata) y una <strong>Fase de Prueba</strong> final (sin mensajes) para evaluar las propiedades de equivalencia de estímulos.
+        El juego consta de una <strong>Fase de Entrenamiento</strong> (con retroalimentación inmediata y sonido) y una <strong>Fase de Prueba</strong> final (con 24 ensayos sin retroalimentación) para evaluar las propiedades de equivalencia.
       </p>
       <button onclick="startGame()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-8 rounded-lg shadow-md transition duration-200">
         Iniciar Juego
@@ -151,11 +151,9 @@
   <!-- PLANTILLA INVISIBLE PARA GENERAR EL PDF -->
   <div id="pdf-template" class="hidden">
     <div style="font-family: Arial, sans-serif; padding: 25px; color: #1f2937; max-width: 700px; margin: 0 auto; line-height: 1.5;">
-      <div style="border-bottom: 2px solid #059669; padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end;">
-        <div>
-          <h1 style="color: #047857; font-size: 22px; font-weight: bold; margin: 0;">Informe Clínico de Evaluación</h1>
-          <p style="color: #4b5563; font-size: 13px; margin: 2px 0 0 0;">Equivalencia de Estímulos - Aves Endémicas y Amenazadas de Colombia</p>
-        </div>
+      <div style="border-bottom: 2px solid #059669; padding-bottom: 12px; margin-bottom: 20px;">
+        <h1 style="color: #047857; font-size: 22px; font-weight: bold; margin: 0;">Informe Clínico de Evaluación</h1>
+        <p style="color: #4b5563; font-size: 13px; margin: 2px 0 0 0;">Equivalencia de Estímulos - Aves Endémicas y Amenazadas de Colombia</p>
       </div>
 
       <div style="background-color: #f3f4f6; border-radius: 8px; padding: 15px; margin-bottom: 20px; border: 1px solid #e5e7eb;">
@@ -187,19 +185,19 @@
         <p id="pdf-notes" style="font-size: 13px; color: #4b5563; margin: 0; white-space: pre-wrap;"></p>
       </div>
 
-      <div style="border-top: 1px solid #e5e7eb; pt-10px; text-align: center; font-size: 11px; color: #9ca3af; margin-top: 30px;">
+      <div style="border-top: 1px solid #e5e7eb; padding-top: 10px; text-align: center; font-size: 11px; color: #9ca3af; margin-top: 30px;">
         Documento generado automáticamente para el control y seguimiento de desempeño del paciente.
       </div>
     </div>
   </div>
 
-  <!-- PIE DE PÁGINA (DERECHOS RESERVADOS Y CRÉDITOS) -->
+  <!-- PIE DE PÁGINA -->
   <footer class="w-full max-w-3xl mt-6 text-center text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-800 pt-4">
     <p>© Todos los derechos reservados.</p>
     <p class="font-medium mt-1 text-gray-700 dark:text-gray-300">Elaborado por Victoria Pabón Martínez — Psicología Clínica</p>
   </footer>
 
-  <!-- MODAL DE FEEDBACK (ENTRENAMIENTO) -->
+  <!-- MODAL DE FEEDBACK -->
   <div id="feedback-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
     <div class="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-sm w-full mx-4 text-center shadow-2xl border border-gray-200 dark:border-gray-700">
       <div id="feedback-icon" class="text-5xl mb-3"></div>
@@ -212,6 +210,56 @@
   </div>
 
   <script>
+    // SISTEMA DE AUDIO NATIVO (WEB AUDIO API)
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playSound(type) {
+      try {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        const now = audioCtx.currentTime;
+
+        if (type === 'success') {
+          // Tono alegre ascendente (Reforzador positivo)
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(440, now); // Nota La
+          osc.frequency.exponentialRampToValueAtTime(880, now + 0.15); // Sube a La una octava arriba
+          
+          gainNode.gain.setValueAtTime(0.15, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+          
+          osc.start(now);
+          osc.stop(now + 0.3);
+        } else if (type === 'error') {
+          // Tono bajo y discreto (Reforzar negativo / feedback correctivo)
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(220, now);
+          osc.frequency.setValueAtTime(180, now + 0.1);
+          
+          gainNode.gain.setValueAtTime(0.15, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+          
+          osc.start(now);
+          osc.stop(now + 0.25);
+        }
+      } catch (e) {
+        console.log("Audio no soportado o bloqueado por el navegador", e);
+      }
+    }
+
     const STIMULI = {
       1: {
         id: 1,
@@ -305,35 +353,37 @@
 
     function generateTestingTrials() {
       let t = [];
-      for (let b = 1; b <= 3; b++) {
+      // 8 ensayos por cada propiedad (Total: 24 ensayos de prueba)
+      for (let i = 0; i < 8; i++) {
+        let b = (i % 3) + 1;
+        
         const refTypes = [
           { sample: 'image', target: 'image', desc: 'A-A' },
           { sample: 'name', target: 'name', desc: 'B-B' },
           { sample: 'scientific', target: 'scientific', desc: 'C-C' }
         ];
-        let chosenRef = refTypes[b - 1];
+        let chosenRef = refTypes[i % refTypes.length];
         t.push({ phase: 'testing', property: 'Reflexividad', type: chosenRef.desc, sampleType: chosenRef.sample, targetType: chosenRef.target, birdId: b });
 
         const symTypes = [
           { sample: 'name', target: 'image', desc: 'B-A' },
-          { sample: 'scientific', target: 'name', desc: 'C-B' },
-          { sample: 'name', target: 'image', desc: 'B-A' }
+          { sample: 'scientific', target: 'name', desc: 'C-B' }
         ];
-        let chosenSym = symTypes[b - 1];
+        let chosenSym = symTypes[i % symTypes.length];
         t.push({ phase: 'testing', property: 'Simetría', type: chosenSym.desc, sampleType: chosenSym.sample, targetType: chosenSym.target, birdId: b });
 
         const transTypes = [
           { sample: 'image', target: 'scientific', desc: 'A-C' },
-          { sample: 'scientific', target: 'image', desc: 'C-A' },
-          { sample: 'image', target: 'scientific', desc: 'A-C' }
+          { sample: 'scientific', target: 'image', desc: 'C-A' }
         ];
-        let chosenTrans = transTypes[b - 1];
+        let chosenTrans = transTypes[i % transTypes.length];
         t.push({ phase: 'testing', property: 'Transitividad', type: chosenTrans.desc, sampleType: chosenTrans.sample, targetType: chosenTrans.target, birdId: b });
       }
       return shuffleArray(t);
     }
 
     function startGame() {
+      initAudio();
       currentPhase = "training";
       currentTrialIndex = 0;
       testResults = [];
@@ -407,11 +457,14 @@
 
       if (currentPhase === "training") {
         if (isCorrect) {
+          playSound('success');
           showFeedback(true, "¡Muy bien, lo hiciste!", "Has seleccionado la opción correcta.", () => advanceTrial());
         } else {
+          playSound('error');
           showFeedback(false, "Te equivocaste", "Intenta de nuevo en el siguiente ensayo.", () => advanceTrial());
         }
       } else {
+        // Fase de prueba (sin feedback visual pero con sonido sutil opcional o sin sonido para mantener rigor experimental)
         testResults.push({
           property: trials[currentTrialIndex].property,
           correct: isCorrect
@@ -484,7 +537,7 @@
         const propResults = testResults.filter(r => r.property === prop);
         const propCorrect = propResults.filter(r => r.correct).length;
         const propTotal = propResults.length;
-        const passed = propCorrect === propTotal;
+        const passed = propCorrect >= (propTotal * 0.8);
 
         const row = document.createElement("tr");
         row.className = "border-b border-gray-200 dark:border-gray-700";
@@ -510,7 +563,6 @@
       const correctTest = testResults.filter(r => r.correct).length;
       const percentage = Math.round((correctTest / totalTest) * 100);
 
-      // Llenar datos de la plantilla PDF
       document.getElementById("pdf-date").textContent = date;
       document.getElementById("pdf-patient").textContent = patientId;
       document.getElementById("pdf-score").textContent = `${percentage}%`;
@@ -524,7 +576,7 @@
         const propResults = testResults.filter(r => r.property === prop);
         const propCorrect = propResults.filter(r => r.correct).length;
         const propTotal = propResults.length;
-        const passed = propCorrect === propTotal;
+        const passed = propCorrect >= (propTotal * 0.8);
 
         const row = document.createElement("tr");
         row.style.borderBottom = "1px solid #e5e7eb";
@@ -538,7 +590,6 @@
         pdfTbody.appendChild(row);
       });
 
-      // Generar PDF usando html2pdf
       const element = document.getElementById("pdf-template");
       element.classList.remove("hidden");
 
