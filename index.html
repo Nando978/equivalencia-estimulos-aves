@@ -62,7 +62,7 @@
 
       <h2 class="text-2xl font-bold mb-3">¡Bienvenido al Juego de Discriminación!</h2>
       <p class="text-gray-600 dark:text-gray-300 mb-6 max-w-lg mx-auto text-base leading-relaxed">
-        El juego se divide en <strong>3 bloques independientes (Chivito, Cotorra y Montañerito)</strong>. Cada bloque entrena las relaciones con reforzamiento inmediato y luego evalúa las propiedades de emergencia (Reflexividad, Simetría y Transitividad) sin retroalimentación.
+        El juego consta de <strong>3 bloques independientes (Chivito, Cotorra y Montañerito)</strong>. Cada bloque evalúa entrenamiento con reforzamiento y posteriormente las propiedades de Reflexividad (3 ensayos), Simetría (2 ensayos) y Transitividad (2 ensayos) sin retroalimentación.
       </p>
       <button onclick="startGame()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-8 rounded-lg shadow-md transition duration-200">
         Iniciar Juego
@@ -77,10 +77,10 @@
             Bloque: Chivito de Santa Marta
           </span>
           <span id="phase-badge" class="px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-            Fase: Entrenamiento A1-B1 / B1-C1
+            Fase: Entrenamiento
           </span>
           <span id="trial-counter" class="text-xs text-gray-500 dark:text-gray-400 ml-2">
-            Ensayo 1 / 11
+            Ensayo 1 / 8
           </span>
         </div>
         <div id="trial-type-badge" class="text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
@@ -136,7 +136,7 @@
           <thead class="text-xs uppercase bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
             <tr>
               <th scope="col" class="px-4 py-3">Bloque / Ave</th>
-              <th scope="col" class="px-4 py-3">Propiedad / Relación</th>
+              <th scope="col" class="px-4 py-3">Propiedad Evaluada</th>
               <th scope="col" class="px-4 py-3 text-center">Ensayos Correctos</th>
               <th scope="col" class="px-4 py-3 text-center">Resultado</th>
             </tr>
@@ -307,7 +307,7 @@
     let currentPhaseIndex = 0;
     let currentTrialIndex = 0;
     let trials = [];
-    let blockResults = {}; // Almacena resultados por bloque y propiedad
+    let blockResults = {}; 
     let pendingCallback = null;
 
     function toggleDarkMode() {
@@ -346,24 +346,25 @@
     function generateTrialsForBlock(birdId, phase) {
       let t = [];
       if (phase === "training") {
-        // 4 ensayos A-B (Imagen -> Nombre) y 4 ensayos B-C (Nombre -> Científico)
+        // 4 ensayos A-B y 4 ensayos B-C (Total 8 ensayos con reforzador)
         for (let i = 0; i < 4; i++) {
           t.push({ blockId: birdId, phase: 'training', type: `A${birdId}-B${birdId}`, sampleType: 'image', targetType: 'name', birdId: birdId });
         }
         for (let i = 0; i < 4; i++) {
           t.push({ blockId: birdId, phase: 'training', type: `B${birdId}-C${birdId}`, sampleType: 'name', targetType: 'scientific', birdId: birdId });
         }
+        return shuffleArray(t); // Mezclar entrenamiento
       } else if (phase === "reflexividad") {
-        // 1 ensayo A-A, 1 ensayo B-B, 1 ensayo C-C
+        // 3 ensayos: A-A, B-B, C-C
         t.push({ blockId: birdId, phase: 'testing', property: 'Reflexividad', type: `A${birdId}-A${birdId}`, sampleType: 'image', targetType: 'image', birdId: birdId });
         t.push({ blockId: birdId, phase: 'testing', property: 'Reflexividad', type: `B${birdId}-B${birdId}`, sampleType: 'name', targetType: 'name', birdId: birdId });
         t.push({ blockId: birdId, phase: 'testing', property: 'Reflexividad', type: `C${birdId}-C${birdId}`, sampleType: 'scientific', targetType: 'scientific', birdId: birdId });
       } else if (phase === "simetria") {
-        // 1 ensayo B-A, 1 ensayo C-B
+        // 2 ensayos: B-A, C-B
         t.push({ blockId: birdId, phase: 'testing', property: 'Simetría', type: `B${birdId}-A${birdId}`, sampleType: 'name', targetType: 'image', birdId: birdId });
         t.push({ blockId: birdId, phase: 'testing', property: 'Simetría', type: `C${birdId}-B${birdId}`, sampleType: 'scientific', targetType: 'name', birdId: birdId });
       } else if (phase === "transitividad") {
-        // 1 ensayo A-C, 1 ensayo C-A
+        // 2 ensayos: A-C, C-A
         t.push({ blockId: birdId, phase: 'testing', property: 'Transitividad', type: `A${birdId}-C${birdId}`, sampleType: 'image', targetType: 'scientific', birdId: birdId });
         t.push({ blockId: birdId, phase: 'testing', property: 'Transitividad', type: `C${birdId}-A${birdId}`, sampleType: 'scientific', targetType: 'image', birdId: birdId });
       }
@@ -465,7 +466,6 @@
           showFeedback(false, "Te equivocaste", "Intenta de nuevo en el siguiente ensayo.", () => advanceTrial(isCorrect));
         }
       } else {
-        // Registrar resultado de prueba
         if (!blockResults[trial.blockId][trial.property]) {
           blockResults[trial.blockId][trial.property] = { correct: 0, total: 0 };
         }
@@ -491,12 +491,10 @@
       if (currentTrialIndex < trials.length) {
         renderTrial();
       } else {
-        // Avanzar a la siguiente fase o bloque
         currentPhaseIndex++;
         if (currentPhaseIndex < blockPhases.length) {
           loadCurrentBlockPhase();
         } else {
-          // Siguiente ave / bloque
           currentBlockIndex++;
           currentPhaseIndex = 0;
           if (currentBlockIndex < 3) {
