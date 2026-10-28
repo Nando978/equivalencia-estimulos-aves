@@ -62,7 +62,7 @@
 
       <h2 class="text-2xl font-bold mb-3">¡Bienvenido al Juego de Discriminación!</h2>
       <p class="text-gray-600 dark:text-gray-300 mb-6 max-w-lg mx-auto text-base leading-relaxed">
-        El juego consta de una <strong>Fase de Entrenamiento</strong> (con 4 ensayos por relación y retroalimentación inmediata) y una <strong>Fase de Prueba</strong> final (sin mensajes) para evaluar las propiedades de equivalencia.
+        El juego se divide en <strong>3 bloques independientes (Chivito, Cotorra y Montañerito)</strong>. Cada bloque entrena las relaciones con reforzamiento inmediato y luego evalúa las propiedades de emergencia (Reflexividad, Simetría y Transitividad) sin retroalimentación.
       </p>
       <button onclick="startGame()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-8 rounded-lg shadow-md transition duration-200">
         Iniciar Juego
@@ -73,15 +73,18 @@
     <section id="screen-play" class="hidden">
       <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-4 mb-6">
         <div>
+          <span id="block-badge" class="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200 mr-2">
+            Bloque: Chivito de Santa Marta
+          </span>
           <span id="phase-badge" class="px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-            Fase 1: Entrenamiento
+            Fase: Entrenamiento A1-B1 / B1-C1
           </span>
           <span id="trial-counter" class="text-xs text-gray-500 dark:text-gray-400 ml-2">
-            Ensayo 1 / 24
+            Ensayo 1 / 11
           </span>
         </div>
         <div id="trial-type-badge" class="text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
-          Relación A-B
+          Relación A1-B1
         </div>
       </div>
 
@@ -101,11 +104,11 @@
     <!-- RESUMEN FINAL -->
     <section id="screen-summary" class="hidden text-center py-6">
       <h2 class="text-2xl font-bold mb-2">Resumen de Resultados</h2>
-      <p class="text-gray-600 dark:text-gray-300 mb-6">Evaluación de las propiedades de equivalencia de estímulos</p>
+      <p class="text-gray-600 dark:text-gray-300 mb-6">Evaluación por bloques de las propiedades de equivalencia de estímulos</p>
 
       <div class="bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-6 max-w-md mx-auto">
         <div class="text-4xl font-extrabold text-emerald-600 dark:text-emerald-400 mb-1" id="final-score">0%</div>
-        <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Porcentaje General de Aciertos en Prueba</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Porcentaje General de Aciertos en Pruebas</p>
       </div>
 
       <!-- DATOS DEL PACIENTE Y BOTÓN DE PDF -->
@@ -132,7 +135,8 @@
         <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
           <thead class="text-xs uppercase bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
             <tr>
-              <th scope="col" class="px-4 py-3">Propiedad Evaluada</th>
+              <th scope="col" class="px-4 py-3">Bloque / Ave</th>
+              <th scope="col" class="px-4 py-3">Propiedad / Relación</th>
               <th scope="col" class="px-4 py-3 text-center">Ensayos Correctos</th>
               <th scope="col" class="px-4 py-3 text-center">Resultado</th>
             </tr>
@@ -164,14 +168,15 @@
       </div>
 
       <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 15px; text-align: center; margin-bottom: 20px;">
-        <p style="font-size: 12px; text-transform: uppercase; color: #047857; font-weight: bold; margin: 0;">Porcentaje General de Aciertos en Fase de Prueba</p>
+        <p style="font-size: 12px; text-transform: uppercase; color: #047857; font-weight: bold; margin: 0;">Porcentaje General de Aciertos en Pruebas</p>
         <p style="font-size: 36px; font-weight: bold; color: #059669; margin: 5px 0 0 0;" id="pdf-score">0%</p>
       </div>
 
-      <h2 style="font-size: 14px; text-transform: uppercase; color: #374151; margin: 0 0 10px 0;">Desglose por Propiedad Evaluada</h2>
+      <h2 style="font-size: 14px; text-transform: uppercase; color: #374151; margin: 0 0 10px 0;">Desglose por Bloque y Propiedad</h2>
       <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px;">
         <thead>
           <tr style="background-color: #e5e7eb; color: #374151; text-align: left;">
+            <th style="padding: 8px 12px; border: 1px solid #d1d5db;">Bloque / Ave</th>
             <th style="padding: 8px 12px; border: 1px solid #d1d5db;">Propiedad Evaluada</th>
             <th style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center;">Ensayos Correctos</th>
             <th style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center;">Resultado</th>
@@ -233,10 +238,9 @@
         const now = audioCtx.currentTime;
 
         if (type === 'success') {
-          // Tono alegre ascendente (Reforzador positivo)
           osc.type = 'sine';
-          osc.frequency.setValueAtTime(440, now); // Nota La
-          osc.frequency.exponentialRampToValueAtTime(880, now + 0.15); // Sube a La una octava arriba
+          osc.frequency.setValueAtTime(440, now);
+          osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
           
           gainNode.gain.setValueAtTime(0.15, now);
           gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
@@ -244,7 +248,6 @@
           osc.start(now);
           osc.stop(now + 0.3);
         } else if (type === 'error') {
-          // Tono bajo y discreto (Reforzar negativo / feedback correctivo)
           osc.type = 'triangle';
           osc.frequency.setValueAtTime(220, now);
           osc.frequency.setValueAtTime(180, now + 0.1);
@@ -256,7 +259,7 @@
           osc.stop(now + 0.25);
         }
       } catch (e) {
-        console.log("Audio no soportado o bloqueado por el navegador", e);
+        console.log("Audio no soportado", e);
       }
     }
 
@@ -299,10 +302,12 @@
       }
     };
 
-    let currentPhase = "training";
+    let currentBlockIndex = 0; // 0: Chivito, 1: Cotorra, 2: Montañerito
+    let blockPhases = ["training", "reflexividad", "simetria", "transitividad"];
+    let currentPhaseIndex = 0;
     let currentTrialIndex = 0;
     let trials = [];
-    let testResults = [];
+    let blockResults = {}; // Almacena resultados por bloque y propiedad
     let pendingCallback = null;
 
     function toggleDarkMode() {
@@ -324,7 +329,7 @@
     function confirmGoHome() {
       const screenPlay = document.getElementById("screen-play");
       if (!screenPlay.classList.contains("hidden")) {
-        if (confirm("¿Estás seguro de que deseas volver al inicio? Se perderá el progreso del juego actual.")) {
+        if (confirm("¿Estás seguro de que deseas volver al inicio? Se perderá el progreso actual.")) {
           goHome();
         }
       } else {
@@ -338,81 +343,76 @@
       document.getElementById("screen-start").classList.remove("hidden");
     }
 
-    function generateTrainingTrials() {
+    function generateTrialsForBlock(birdId, phase) {
       let t = [];
-      for (let birdId = 1; birdId <= 3; birdId++) {
+      if (phase === "training") {
+        // 4 ensayos A-B (Imagen -> Nombre) y 4 ensayos B-C (Nombre -> Científico)
         for (let i = 0; i < 4; i++) {
-          t.push({ phase: 'training', type: 'A-B', sampleType: 'image', targetType: 'name', birdId: birdId });
+          t.push({ blockId: birdId, phase: 'training', type: `A${birdId}-B${birdId}`, sampleType: 'image', targetType: 'name', birdId: birdId });
         }
         for (let i = 0; i < 4; i++) {
-          t.push({ phase: 'training', type: 'B-C', sampleType: 'name', targetType: 'scientific', birdId: birdId });
+          t.push({ blockId: birdId, phase: 'training', type: `B${birdId}-C${birdId}`, sampleType: 'name', targetType: 'scientific', birdId: birdId });
         }
-      }
-      return shuffleArray(t);
-    }
-
-    function generateTestingTrials() {
-      let t = [];
-      // 8 ensayos por cada propiedad (Total: 24 ensayos de prueba)
-      for (let i = 0; i < 8; i++) {
-        let b = (i % 3) + 1;
-        
-        const refTypes = [
-          { sample: 'image', target: 'image', desc: 'A-A' },
-          { sample: 'name', target: 'name', desc: 'B-B' },
-          { sample: 'scientific', target: 'scientific', desc: 'C-C' }
-        ];
-        let chosenRef = refTypes[i % refTypes.length];
-        t.push({ phase: 'testing', property: 'Reflexividad', type: chosenRef.desc, sampleType: chosenRef.sample, targetType: chosenRef.target, birdId: b });
-
-        const symTypes = [
-          { sample: 'name', target: 'image', desc: 'B-A' },
-          { sample: 'scientific', target: 'name', desc: 'C-B' }
-        ];
-        let chosenSym = symTypes[i % symTypes.length];
-        t.push({ phase: 'testing', property: 'Simetría', type: chosenSym.desc, sampleType: chosenSym.sample, targetType: chosenSym.target, birdId: b });
-
-        const transTypes = [
-          { sample: 'image', target: 'scientific', desc: 'A-C' },
-          { sample: 'scientific', target: 'image', desc: 'C-A' }
-        ];
-        let chosenTrans = transTypes[i % transTypes.length];
-        t.push({ phase: 'testing', property: 'Transitividad', type: chosenTrans.desc, sampleType: chosenTrans.sample, targetType: chosenTrans.target, birdId: b });
+      } else if (phase === "reflexividad") {
+        // 1 ensayo A-A, 1 ensayo B-B, 1 ensayo C-C
+        t.push({ blockId: birdId, phase: 'testing', property: 'Reflexividad', type: `A${birdId}-A${birdId}`, sampleType: 'image', targetType: 'image', birdId: birdId });
+        t.push({ blockId: birdId, phase: 'testing', property: 'Reflexividad', type: `B${birdId}-B${birdId}`, sampleType: 'name', targetType: 'name', birdId: birdId });
+        t.push({ blockId: birdId, phase: 'testing', property: 'Reflexividad', type: `C${birdId}-C${birdId}`, sampleType: 'scientific', targetType: 'scientific', birdId: birdId });
+      } else if (phase === "simetria") {
+        // 1 ensayo B-A, 1 ensayo C-B
+        t.push({ blockId: birdId, phase: 'testing', property: 'Simetría', type: `B${birdId}-A${birdId}`, sampleType: 'name', targetType: 'image', birdId: birdId });
+        t.push({ blockId: birdId, phase: 'testing', property: 'Simetría', type: `C${birdId}-B${birdId}`, sampleType: 'scientific', targetType: 'name', birdId: birdId });
+      } else if (phase === "transitividad") {
+        // 1 ensayo A-C, 1 ensayo C-A
+        t.push({ blockId: birdId, phase: 'testing', property: 'Transitividad', type: `A${birdId}-C${birdId}`, sampleType: 'image', targetType: 'scientific', birdId: birdId });
+        t.push({ blockId: birdId, phase: 'testing', property: 'Transitividad', type: `C${birdId}-A${birdId}`, sampleType: 'scientific', targetType: 'image', birdId: birdId });
       }
       return shuffleArray(t);
     }
 
     function startGame() {
       initAudio();
-      currentPhase = "training";
+      currentBlockIndex = 0;
+      currentPhaseIndex = 0;
       currentTrialIndex = 0;
-      testResults = [];
-      trials = generateTrainingTrials();
+      blockResults = { 1: {}, 2: {}, 3: {} };
+      
+      loadCurrentBlockPhase();
 
       document.getElementById("screen-start").classList.add("hidden");
       document.getElementById("screen-summary").classList.add("hidden");
       document.getElementById("screen-play").classList.remove("hidden");
+    }
 
+    function loadCurrentBlockPhase() {
+      const birdId = currentBlockIndex + 1;
+      const phase = blockPhases[currentPhaseIndex];
+      trials = generateTrialsForBlock(birdId, phase);
+      currentTrialIndex = 0;
       renderTrial();
     }
 
     function renderTrial() {
       const trial = trials[currentTrialIndex];
+      const bird = STIMULI[trial.blockId];
 
+      const blockBadge = document.getElementById("block-badge");
       const phaseBadge = document.getElementById("phase-badge");
       const trialCounter = document.getElementById("trial-counter");
       const trialTypeBadge = document.getElementById("trial-type-badge");
 
-      if (currentPhase === "training") {
+      blockBadge.textContent = `Bloque: ${bird.name}`;
+
+      if (trial.phase === 'training') {
         phaseBadge.className = "px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-        phaseBadge.textContent = "Fase 1: Entrenamiento";
+        phaseBadge.textContent = "Fase: Entrenamiento (Con Reforzador)";
       } else {
         phaseBadge.className = "px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
-        phaseBadge.textContent = "Fase 2: Prueba (Sin Retroalimentación)";
+        phaseBadge.textContent = `Prueba: ${trial.property} (Sin Reforzador)`;
       }
 
-      trialCounter.textContent = Ensayo ${currentTrialIndex + 1} / ${trials.length};
-      trialTypeBadge.textContent = Relación: ${trial.type};
+      trialCounter.textContent = `Ensayo ${currentTrialIndex + 1} / ${trials.length}`;
+      trialTypeBadge.textContent = `Relación: ${trial.type}`;
 
       const sampleContainer = document.getElementById("sample-container");
       sampleContainer.innerHTML = "";
@@ -420,11 +420,11 @@
 
       if (trial.sampleType === 'image') {
         const randomImg = targetBird.images[Math.floor(Math.random() * targetBird.images.length)];
-        sampleContainer.innerHTML = <img src="${randomImg}" alt="${targetBird.name}" class="h-40 w-40 object-contain rounded-md shadow bg-white dark:bg-gray-900 p-1">;
+        sampleContainer.innerHTML = `<img src="${randomImg}" alt="${targetBird.name}" class="h-40 w-40 object-contain rounded-md shadow bg-white dark:bg-gray-900 p-1">`;
       } else if (trial.sampleType === 'name') {
-        sampleContainer.innerHTML = <span class="text-xl font-bold px-6 py-2 block">${targetBird.name}</span>;
+        sampleContainer.innerHTML = `<span class="text-xl font-bold px-6 py-2 block">${targetBird.name}</span>`;
       } else if (trial.sampleType === 'scientific') {
-        sampleContainer.innerHTML = <span class="text-xl italic font-serif text-emerald-700 dark:text-emerald-400 px-6 py-2 block">${targetBird.scientific}</span>;
+        sampleContainer.innerHTML = `<span class="text-xl italic font-serif text-emerald-700 dark:text-emerald-400 px-6 py-2 block">${targetBird.scientific}</span>`;
       }
 
       const comparatorsContainer = document.getElementById("comparators-container");
@@ -434,17 +434,17 @@
       options = shuffleArray(options);
 
       options.forEach(birdId => {
-        const bird = STIMULI[birdId];
+        const b = STIMULI[birdId];
         const btn = document.createElement("button");
         btn.className = "stimulus-card bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-lg p-4 text-center cursor-pointer hover:border-emerald-500 focus:outline-none";
         
         if (trial.targetType === 'image') {
-          const imgUrl = bird.images[Math.floor(Math.random() * bird.images.length)];
-          btn.innerHTML = <div class="h-32 w-full flex items-center justify-center bg-gray-50 dark:bg-gray-800 rounded mb-2 overflow-hidden"><img src="${imgUrl}" alt="Opción" class="max-h-full max-w-full object-contain"></div>;
+          const imgUrl = b.images[Math.floor(Math.random() * b.images.length)];
+          btn.innerHTML = `<div class="h-32 w-full flex items-center justify-center bg-gray-50 dark:bg-gray-800 rounded mb-2 overflow-hidden"><img src="${imgUrl}" alt="Opción" class="max-h-full max-w-full object-contain"></div>`;
         } else if (trial.targetType === 'name') {
-          btn.innerHTML = <span class="font-semibold block py-4">${bird.name}</span>;
+          btn.innerHTML = `<span class="font-semibold block py-4">${b.name}</span>`;
         } else if (trial.targetType === 'scientific') {
-          btn.innerHTML = <span class="italic font-serif text-emerald-600 dark:text-emerald-300 block py-4">${bird.scientific}</span>;
+          btn.innerHTML = `<span class="italic font-serif text-emerald-600 dark:text-emerald-300 block py-4">${b.scientific}</span>`;
         }
 
         btn.onclick = () => handleChoice(birdId, trial.birdId);
@@ -454,37 +454,56 @@
 
     function handleChoice(selectedId, correctId) {
       const isCorrect = (selectedId === correctId);
+      const trial = trials[currentTrialIndex];
 
-      if (currentPhase === "training") {
+      if (trial.phase === 'training') {
         if (isCorrect) {
           playSound('success');
-          showFeedback(true, "¡Muy bien, lo hiciste!", "Has seleccionado la opción correcta.", () => advanceTrial());
+          showFeedback(true, "¡Muy bien, lo hiciste!", "Has seleccionado la opción correcta.", () => advanceTrial(isCorrect));
         } else {
           playSound('error');
-          showFeedback(false, "Te equivocaste", "Intenta de nuevo en el siguiente ensayo.", () => advanceTrial());
+          showFeedback(false, "Te equivocaste", "Intenta de nuevo en el siguiente ensayo.", () => advanceTrial(isCorrect));
         }
       } else {
-        // Fase de prueba (sin feedback visual pero con sonido sutil opcional o sin sonido para mantener rigor experimental)
-        testResults.push({
-          property: trials[currentTrialIndex].property,
-          correct: isCorrect
-        });
-        advanceTrial();
+        // Registrar resultado de prueba
+        if (!blockResults[trial.blockId][trial.property]) {
+          blockResults[trial.blockId][trial.property] = { correct: 0, total: 0 };
+        }
+        blockResults[trial.blockId][trial.property].total++;
+        if (isCorrect) {
+          blockResults[trial.blockId][trial.property].correct++;
+        }
+        advanceTrial(isCorrect);
       }
     }
 
-    function advanceTrial() {
+    function advanceTrial(isCorrect) {
+      const trial = trials[currentTrialIndex];
+      if (trial.phase === 'training') {
+        if (!blockResults[trial.blockId]['Entrenamiento']) {
+          blockResults[trial.blockId]['Entrenamiento'] = { correct: 0, total: 0 };
+        }
+        blockResults[trial.blockId]['Entrenamiento'].total++;
+        if (isCorrect) blockResults[trial.blockId]['Entrenamiento'].correct++;
+      }
+
       currentTrialIndex++;
       if (currentTrialIndex < trials.length) {
         renderTrial();
       } else {
-        if (currentPhase === "training") {
-          currentPhase = "testing";
-          currentTrialIndex = 0;
-          trials = generateTestingTrials();
-          renderTrial();
+        // Avanzar a la siguiente fase o bloque
+        currentPhaseIndex++;
+        if (currentPhaseIndex < blockPhases.length) {
+          loadCurrentBlockPhase();
         } else {
-          showSummary();
+          // Siguiente ave / bloque
+          currentBlockIndex++;
+          currentPhaseIndex = 0;
+          if (currentBlockIndex < 3) {
+            loadCurrentBlockPhase();
+          } else {
+            showSummary();
+          }
         }
       }
     }
@@ -523,35 +542,40 @@
       document.getElementById("screen-play").classList.add("hidden");
       document.getElementById("screen-summary").classList.remove("hidden");
 
-      const totalTest = testResults.length;
-      const correctTest = testResults.filter(r => r.correct).length;
-      const percentage = Math.round((correctTest / totalTest) * 100);
+      let totalTestCorrect = 0;
+      let totalTestCount = 0;
 
-      document.getElementById("final-score").textContent = ${percentage}%;
-
-      const properties = ['Reflexividad', 'Simetría', 'Transitividad'];
       const tbody = document.getElementById("results-table-body");
       tbody.innerHTML = "";
 
-      properties.forEach(prop => {
-        const propResults = testResults.filter(r => r.property === prop);
-        const propCorrect = propResults.filter(r => r.correct).length;
-        const propTotal = propResults.length;
-        const passed = propCorrect >= (propTotal * 0.8);
+      for (let birdId = 1; birdId <= 3; birdId++) {
+        const bird = STIMULI[birdId];
+        const props = ['Reflexividad', 'Simetría', 'Transitividad'];
 
-        const row = document.createElement("tr");
-        row.className = "border-b border-gray-200 dark:border-gray-700";
-        row.innerHTML = `
-          <td class="px-4 py-3 font-medium">${prop}</td>
-          <td class="px-4 py-3 text-center">${propCorrect} / ${propTotal}</td>
-          <td class="px-4 py-3 text-center">
-            <span class="px-2 py-1 text-xs font-semibold rounded-full ${passed ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}">
-              ${passed ? 'Demostrada' : 'No demostrada'}
-            </span>
-          </td>
-        `;
-        tbody.appendChild(row);
-      });
+        props.forEach(prop => {
+          const res = blockResults[birdId][prop] || { correct: 0, total: 0 };
+          totalTestCorrect += res.correct;
+          totalTestCount += res.total;
+          const passed = res.total > 0 && (res.correct >= res.total);
+
+          const row = document.createElement("tr");
+          row.className = "border-b border-gray-200 dark:border-gray-700";
+          row.innerHTML = `
+            <td class="px-4 py-3 font-medium">${bird.name}</td>
+            <td class="px-4 py-3">${prop}</td>
+            <td class="px-4 py-3 text-center">${res.correct} / ${res.total}</td>
+            <td class="px-4 py-3 text-center">
+              <span class="px-2 py-1 text-xs font-semibold rounded-full ${passed ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}">
+                ${passed ? 'Demostrada' : 'No demostrada'}
+              </span>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+      }
+
+      const percentage = totalTestCount > 0 ? Math.round((totalTestCorrect / totalTestCount) * 100) : 0;
+      document.getElementById("final-score").textContent = `${percentage}%`;
     }
 
     function downloadPDFReport() {
@@ -559,36 +583,42 @@
       const patientNotes = document.getElementById("patient-notes").value.trim() || "Sin observaciones adicionales.";
       const date = new Date().toLocaleString("es-CO");
 
-      const totalTest = testResults.length;
-      const correctTest = testResults.filter(r => r.correct).length;
-      const percentage = Math.round((correctTest / totalTest) * 100);
+      let totalTestCorrect = 0;
+      let totalTestCount = 0;
 
-      document.getElementById("pdf-date").textContent = date;
-      document.getElementById("pdf-patient").textContent = patientId;
-      document.getElementById("pdf-score").textContent = ${percentage}%;
-      document.getElementById("pdf-notes").textContent = patientNotes;
-
-      const properties = ['Reflexividad', 'Simetría', 'Transitividad'];
       const pdfTbody = document.getElementById("pdf-table-body");
       pdfTbody.innerHTML = "";
 
-      properties.forEach(prop => {
-        const propResults = testResults.filter(r => r.property === prop);
-        const propCorrect = propResults.filter(r => r.correct).length;
-        const propTotal = propResults.length;
-        const passed = propCorrect >= (propTotal * 0.8);
+      for (let birdId = 1; birdId <= 3; birdId++) {
+        const bird = STIMULI[birdId];
+        const props = ['Reflexividad', 'Simetría', 'Transitividad'];
 
-        const row = document.createElement("tr");
-        row.style.borderBottom = "1px solid #e5e7eb";
-        row.innerHTML = `
-          <td style="padding: 8px 12px; border: 1px solid #d1d5db; font-weight: 500;">${prop}</td>
-          <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center;">${propCorrect} / ${propTotal}</td>
-          <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center; color: ${passed ? '#047857' : '#b91c1c'}; font-weight: bold;">
-            ${passed ? 'Demostrada' : 'No demostrada'}
-          </td>
-        `;
-        pdfTbody.appendChild(row);
-      });
+        props.forEach(prop => {
+          const res = blockResults[birdId][prop] || { correct: 0, total: 0 };
+          totalTestCorrect += res.correct;
+          totalTestCount += res.total;
+          const passed = res.total > 0 && (res.correct >= res.total);
+
+          const row = document.createElement("tr");
+          row.style.borderBottom = "1px solid #e5e7eb";
+          row.innerHTML = `
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; font-weight: 500;">${bird.name}</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db;">${prop}</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center;">${res.correct} / ${res.total}</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center; color: ${passed ? '#047857' : '#b91c1c'}; font-weight: bold;">
+              ${passed ? 'Demostrada' : 'No demostrada'}
+            </td>
+          `;
+          pdfTbody.appendChild(row);
+        });
+      }
+
+      const percentage = totalTestCount > 0 ? Math.round((totalTestCorrect / totalTestCount) * 100) : 0;
+
+      document.getElementById("pdf-date").textContent = date;
+      document.getElementById("pdf-patient").textContent = patientId;
+      document.getElementById("pdf-score").textContent = `${percentage}%`;
+      document.getElementById("pdf-notes").textContent = patientNotes;
 
       const element = document.getElementById("pdf-template");
       element.classList.remove("hidden");
@@ -596,7 +626,7 @@
       const safePatientName = patientId.replace(/[^a-z0-9]/gi, '_').toLowerCase();
       const opt = {
         margin:       10,
-        filename:     Informe_Equivalencia_${safePatientName}.pdf,
+        filename:     `Informe_Equivalencia_${safePatientName}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2 },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
